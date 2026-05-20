@@ -121,3 +121,29 @@ class InstagramStories:
 
         print(f"[UPDATED] Index {index}: {current.user} | "
               f"{current.story_type} | {current.duration}s | {current.timestamp}")
+
+
+    def filter_by_type(self, story_type):
+        """
+        Return all stories matching a given story type.
+        Traverses the full list exactly once.
+        Algorithm       : Linear Search
+        Time Complexity : O(n)
+        """
+        if not self.head:
+            print("[ERROR]   No stories available.")
+            return
+
+        print(f"[FILTER]  Showing all '{story_type}' stories:")
+        current = self.head
+        found   = False
+
+        for _ in range(self.size):
+            if current.story_type == story_type:
+                print(f"          {current.user} | {current.story_type} | "
+                      f"{current.duration}s | {current.timestamp}")
+                found = True
+            current = current.next
+
+        if not found:
+            print(f"          No '{story_type}' stories found.")
