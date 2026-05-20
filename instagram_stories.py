@@ -147,3 +147,117 @@ class InstagramStories:
 
         if not found:
             print(f"          No '{story_type}' stories found.")
+
+
+    # --- Merge Sort helpers ---
+
+    def _get_middle(self, head, size):
+        """Return the middle node of a list segment."""
+        current = head
+        for _ in range(size // 2 - 1):
+            current = current.next
+        return current
+
+    def _merge(self, left, right, left_size, right_size):
+        """
+        Merge two sorted halves.
+        Primary sort key  : duration (ascending)
+        Secondary sort key: timestamp (ascending, used when durations are equal)
+        """
+        if not left:  return right
+        if not right: return left
+
+        left_wins = (
+            left.duration < right.duration or
+            (left.duration == right.duration and
+             left.timestamp <= right.timestamp)
+        )
+
+        if left_wins:
+            result      = left
+            result.next = self._merge(left.next, right, left_size - 1, right_size)
+        else:
+            result      = right
+            result.next = self._merge(left, right.next, left_size, right_size - 1)
+
+        if result.next:
+            result.next.prev = result
+
+        return result
+
+    def _merge_sort(self, head, size):
+        """Recursively split the list and sort each half."""
+        if size <= 1:
+            return head
+
+        middle     = self._get_middle(head, size)
+        right_head = middle.next
+        middle.next = None
+        if right_head:
+            right_head.prev = None
+
+        left  = self._merge_sort(head, size // 2)
+        right = self._merge_sort(right_head, size - size // 2)
+        return self._merge(left, right, size // 2, size - size // 2)
+
+    def sort_stories(self):
+        """
+        Sort stories by duration (primary) then timestamp (secondary).
+        The circle is broken before sorting and restored after,
+        because Merge Sort requires a clear start and end point.
+        Algorithm       : Merge Sort
+        Time Complexity : O(n log n)
+        """
+        if not self.head:
+            return
+
+        # break the circle
+        self.tail.next = None
+        self.head.prev = None
+
+        # sort
+        self.head = self._merge_sort(self.head, self.size)
+
+        # restore the circle
+        current = self.head
+        while current.next:
+            current = current.next
+        self.tail          = current
+        self.tail.next     = self.head
+        self.head.prev     = self.tail
+
+        print("[SORTED]  Stories sorted by duration, then timestamp.")
+
+
+    def reverse(self):
+        """
+        Reverse the order of the feed by swapping all next and prev pointers,
+        then swapping head and tail.
+        Time Complexity: O(n)
+        """
+        if not self.head:
+            return
+
+        current = self.head
+        for _ in range(self.size):
+            current.next, current.prev = current.prev, current.next
+            current = current.prev
+
+        self.head, self.tail = self.tail, self.head
+        print("[REVERSED] Feed order reversed.")
+
+
+    def display(self):
+        """Print all stories in the current feed order."""
+        if not self.head:
+            print("Feed is empty.")
+            return
+
+        current = self.head
+        print(f"  {'Index':<6} {'User':<10} {'Type':<12} {'Duration':>9} {'Posted'}")
+        print(f"  {'-'*5} {'-'*9} {'-'*11} {'-'*9} {'-'*6}")
+        for i in range(self.size):
+            print(f"  [{i}]   {current.user:<10} {current.story_type:<12} "
+                  f"{current.duration:>6}s   {current.timestamp}")
+            current = current.next
+        print()
