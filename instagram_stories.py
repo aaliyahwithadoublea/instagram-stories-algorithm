@@ -48,13 +48,11 @@ class InstagramStories:
         new_node = Node(user, story_type, duration, timestamp)
 
         if self.head is None:
-            # first story - points to itself to form the circle
             self.head      = new_node
             self.tail      = new_node
             new_node.next  = new_node
             new_node.prev  = new_node
         else:
-            # attach to end and reconnect the circle
             new_node.prev      = self.tail
             new_node.next      = self.head
             self.tail.next     = new_node
@@ -95,3 +93,31 @@ class InstagramStories:
 
         self.size -= 1
         print(f"[DELETED] Index {index}: {current.user} | {current.story_type}")
+
+
+    def update_story(self, index, user=None, story_type=None,
+                     duration=None, timestamp=None):
+        """
+        Update one or more attributes of the story at a given index.
+        Only the provided arguments are updated.
+        Time Complexity: O(n)
+        """
+        if not self.head:
+            print("[ERROR]   No stories to update.")
+            return
+
+        if index < 0 or index >= self.size:
+            print(f"[ERROR]   Invalid index. Valid range: 0 to {self.size - 1}.")
+            return
+
+        current = self.head
+        for i in range(index):
+            current = current.next
+
+        if user:        current.user       = user
+        if story_type:  current.story_type = story_type
+        if duration:    current.duration   = duration
+        if timestamp:   current.timestamp  = timestamp
+
+        print(f"[UPDATED] Index {index}: {current.user} | "
+              f"{current.story_type} | {current.duration}s | {current.timestamp}")
