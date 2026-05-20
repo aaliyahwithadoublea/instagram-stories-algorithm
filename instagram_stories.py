@@ -26,9 +26,9 @@ class InstagramStories:
     """
 
     def __init__(self):
-        self.head = None  # first story in the feed
-        self.tail = None  # last story in the feed
-        self.size = 0     # total number of stories
+        self.head = None
+        self.tail = None
+        self.size = 0
 
 
     def prefill(self):
@@ -38,3 +38,60 @@ class InstagramStories:
         self.add_story("Carol", "feedback",  12, "10:00")
         self.add_story("Dave",  "promotion",  5, "10:30")
         self.add_story("Eve",   "caption",   20, "11:00")
+
+
+    def add_story(self, user, story_type, duration, timestamp):
+        """
+        Insert a new story at the tail of the feed.
+        Time Complexity: O(1)
+        """
+        new_node = Node(user, story_type, duration, timestamp)
+
+        if self.head is None:
+            # first story - points to itself to form the circle
+            self.head      = new_node
+            self.tail      = new_node
+            new_node.next  = new_node
+            new_node.prev  = new_node
+        else:
+            # attach to end and reconnect the circle
+            new_node.prev      = self.tail
+            new_node.next      = self.head
+            self.tail.next     = new_node
+            self.head.prev     = new_node
+            self.tail          = new_node
+
+        self.size += 1
+        print(f"[ADDED]   {user} | {story_type} | {duration}s | {timestamp}")
+
+
+    def delete_by_index(self, index):
+        """
+        Remove the story at a given index (0-based).
+        Time Complexity: O(n) to traverse, O(1) to delete.
+        """
+        if not self.head:
+            print("[ERROR]   No stories to delete.")
+            return
+
+        if index < 0 or index >= self.size:
+            print(f"[ERROR]   Invalid index. Valid range: 0 to {self.size - 1}.")
+            return
+
+        current = self.head
+        for i in range(index):
+            current = current.next
+
+        if self.size == 1:
+            self.head = None
+            self.tail = None
+        else:
+            current.prev.next = current.next
+            current.next.prev = current.prev
+            if current == self.head:
+                self.head = current.next
+            if current == self.tail:
+                self.tail = current.prev
+
+        self.size -= 1
+        print(f"[DELETED] Index {index}: {current.user} | {current.story_type}")
